@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
-using MehmetHairDesigner.Server.Domain.Entities;
+using MehmetHairDesigner.Server.Infrastructure.Entities;
 using System;
 
 namespace MehmetHairDesigner.Server.Infrastructure.Persistence
