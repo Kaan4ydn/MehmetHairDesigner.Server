@@ -12,6 +12,5 @@ namespace MehmetHairDesigner.Server.Infrastructure.Persistence
         {
         }
 
-        // İleride DbSet<Product> gibi tablolar buraya eklenir.
     }
 }
