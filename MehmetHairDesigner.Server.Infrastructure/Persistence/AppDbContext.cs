@@ -1,0 +1,17 @@
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using MehmetHairDesigner.Server.Domain.Entities;
+using System;
+
+namespace MehmetHairDesigner.Server.Infrastructure.Persistence
+{
+    public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
+    {
+        public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+        {
+        }
+
+        // İleride DbSet<Product> gibi tablolar buraya eklenir.
+    }
+}
