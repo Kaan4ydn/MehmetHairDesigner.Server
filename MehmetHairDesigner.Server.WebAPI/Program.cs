@@ -18,7 +18,7 @@ namespace MehmetHairDesigner.Server.WebAPI
 
             // 💾 In-Memory veritabanı ekleniyor (geçici veritabanı)
             builder.Services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase("HairDesignerDb"));
+                options.UseSqlServer(builder.Configuration.GetConnectionString("HairDesignerConnectionString")));
 
             // 🔐 Identity servisleri
             builder.Services.AddIdentity<IdentityAppUser, IdentityRole<Guid>>(options =>
@@ -90,8 +90,6 @@ namespace MehmetHairDesigner.Server.WebAPI
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
-            app.UseHttpsRedirection();
 
             // JWT middleware'leri
             app.UseAuthentication(); // 🔑 önce authentication
