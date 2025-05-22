@@ -25,7 +25,6 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             _tokenService = tokenService;
         }
 
-        // ✅ Kayıt olma
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterDto dto)
         {
@@ -44,7 +43,6 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             return Ok("Kayıt başarılı.");
         }
 
-        // ✅ Giriş yapma ve token alma
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto dto)
         {

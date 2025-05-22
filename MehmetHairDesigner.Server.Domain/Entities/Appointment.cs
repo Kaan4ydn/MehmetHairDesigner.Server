@@ -1,3 +1,4 @@
+using MehmetHairDesigner.Server.Domain.Abstraction;
 using System;
 using System.Collections.Generic;
 namespace MehmetHairDesigner.Server.Domain.Entities
@@ -8,9 +9,8 @@ namespace MehmetHairDesigner.Server.Domain.Entities
         Sakal = 2,
         SacVeSakal = 3
     }
-    public class Appointment
+    public class Appointment : BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid UserId { get; set; }           // Randevuyu alan kullanıcı
         public Guid BarberId { get; set; }         // Hangi berbere randevu alındı
         public DateTime StartTime { get; set; }    // Başlangıç

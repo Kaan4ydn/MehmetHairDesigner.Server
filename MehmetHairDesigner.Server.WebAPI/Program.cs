@@ -7,6 +7,8 @@ using System.Text;
 using MehmetHairDesigner.Server.Infrastructure.Persistence;
 using MehmetHairDesigner.Server.Application.Services;
 using MehmetHairDesigner.Server.Infrastructure.Entities;
+using MehmetHairDesigner.Server.Application.Validators.Auth;
+using FluentValidation;
 
 namespace MehmetHairDesigner.Server.WebAPI
 {
@@ -16,11 +18,9 @@ namespace MehmetHairDesigner.Server.WebAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // 💾 In-Memory veritabanı ekleniyor (geçici veritabanı)
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("HairDesignerConnectionString")));
 
-            // 🔐 Identity servisleri
             builder.Services.AddIdentity<IdentityAppUser, IdentityRole<Guid>>(options =>
             {
                 options.Password.RequireDigit = false;
@@ -31,7 +31,6 @@ namespace MehmetHairDesigner.Server.WebAPI
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            // 🔐 JWT Authentication ayarları
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(options =>
                 {
@@ -48,9 +47,11 @@ namespace MehmetHairDesigner.Server.WebAPI
                     };
                 });
 
+            builder.Services.AddControllers();
+            builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
+
             builder.Services.AddScoped<ITokenService, TokenService>();
 
-            // 🔍 Swagger + JWT entegrasyonu
             builder.Services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "MehmetHairDesigner API", Version = "v1" });
