@@ -15,4 +15,9 @@
     <ProjectReference Include="..\MehmetHairDesigner.Server.Domain\MehmetHairDesigner.Server.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="9.0.5" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.10.0" />
+  </ItemGroup>
+
 </Project>
