@@ -26,8 +26,14 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto dto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
         {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                return BadRequest(errors);
+            }
+
             var user = new IdentityAppUser
             {
                 FullName = dto.FullName,
