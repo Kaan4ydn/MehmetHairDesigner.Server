@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using MehmetHairDesigner.Server.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using MehmetHairDesigner.Server.Infrastructure.Persistence;
+using MehmetHairDesigner.Server.Application.DTOs;
 
 namespace MehmetHairDesigner.Server.WebAPI.Controllers
 {
@@ -26,11 +27,19 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
 
         // ✅ Yeni berber oluştur (ileride admin koruması eklenecek)
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Barber barber)
-        {
-            _context.Barbers.Add(barber);
-            await _context.SaveChangesAsync();
-            return Ok(barber);
-        }
+public async Task<IActionResult> Create([FromBody] BarberCreateDto dto)
+{
+    var barber = new Barber
+    {
+        Id = Guid.NewGuid(),
+        FullName = dto.FullName,
+        Appointments = new List<Appointment>() // boş başlat
+    };
+
+    _context.Barbers.Add(barber);
+    await _context.SaveChangesAsync();
+
+    return Ok(barber);
+}
     }
 }
