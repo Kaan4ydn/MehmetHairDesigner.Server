@@ -14,7 +14,7 @@ namespace MehmetHairDesigner.Server.Domain.Abstraction
         }
 
         public Guid Id { get; set; }
-        public DateTimeOffset CreateAt { get; set; }
+        public DateTimeOffset CreateAt { get; set; } = DateTime.Now;
         public DateTimeOffset? UpdateAt { get; set; }
         public DateTimeOffset? DeleteAt { get; set; }
         public bool IsDeleted { get; set; }
