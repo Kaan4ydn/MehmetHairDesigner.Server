@@ -30,7 +30,10 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         {
             if (!ModelState.IsValid)
             {
-                var errors = ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
                 return BadRequest(errors);
             }
 
@@ -57,16 +60,16 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
                 return Unauthorized("Kullanıcı bulunamadı.");
 
             var result = await _signInManager.CheckPasswordSignInAsync(user, dto.Password, false);
-
             if (!result.Succeeded)
                 return Unauthorized("Hatalı şifre.");
 
-            var token = _tokenService.CreateToken(user.ToDomainUser());
+            var roles = await _userManager.GetRolesAsync(user);
+
+            var token = _tokenService.CreateToken(user.ToDomainUser(roles.ToList()));
 
             return Ok(new { token });
         }
 
-        // ✅ Token ile kullanıcı bilgisi alma
         [Authorize]
         [HttpGet("userinfo")]
         public IActionResult GetCurrentUserInfo()
@@ -74,12 +77,14 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             var id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             var name = User.Identity?.Name;
             var email = User.FindFirst(ClaimTypes.Email)?.Value;
+            var roles = User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList();
 
             return Ok(new
             {
                 Id = id,
                 FullName = name,
-                Email = email
+                Email = email,
+                Roles = roles
             });
         }
     }

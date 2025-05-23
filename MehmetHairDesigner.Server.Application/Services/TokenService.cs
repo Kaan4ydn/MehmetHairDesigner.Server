@@ -25,6 +25,15 @@ namespace MehmetHairDesigner.Server.Application.Services
                 new Claim(ClaimTypes.Name, user.FullName)
             };
 
+            // Kullanıcının rollerini de claim olarak ekle
+            if (user.Roles != null)
+            {
+                foreach (var role in user.Roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
+            }
+
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 

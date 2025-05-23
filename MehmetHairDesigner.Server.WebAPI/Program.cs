@@ -103,6 +103,16 @@ builder.Services.AddScoped<AppointmentService>();
 
             app.MapControllers();
 
+          using (var scope = app.Services.CreateScope())
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityAppUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+
+    // await yerine:
+    AppDbContextSeed.SeedAsync(userManager, roleManager).GetAwaiter().GetResult();
+}
+
+
             app.Run();
         }
     }
