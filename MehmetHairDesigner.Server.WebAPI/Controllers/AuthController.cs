@@ -42,13 +42,18 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             {
                 FullName = dto.FullName,
                 UserName = dto.Email,
-                Email = dto.Email
+                Email = dto.Email,
+                
+                
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);
 
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
+
+                await _userManager.AddToRoleAsync(user, dto.Role);
+
 
             return Ok("Kayıt başarılı.");
         }
