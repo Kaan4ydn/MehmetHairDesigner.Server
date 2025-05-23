@@ -22,7 +22,8 @@ namespace MehmetHairDesigner.Server.Application.Services
             {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
                 new Claim(ClaimTypes.Email, user.Email),
-                new Claim(ClaimTypes.Name, user.FullName)
+                new Claim(ClaimTypes.Name, user.FullName),
+               
             };
 
             // Kullanıcının rollerini de claim olarak ekle
