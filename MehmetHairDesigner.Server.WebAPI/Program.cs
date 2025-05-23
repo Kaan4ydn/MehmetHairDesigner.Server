@@ -33,23 +33,33 @@ namespace MehmetHairDesigner.Server.WebAPI
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    var key = builder.Configuration["Jwt:Key"];
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
+           builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var key = builder.Configuration["Jwt:Key"];
 
-                        ClockSkew = TimeSpan.Zero,
-                        ValidateIssuer = true,
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidateAudience = true,
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-                    };
-                });
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+            ClockSkew = TimeSpan.Zero,
+            RequireExpirationTime = true
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"JWT AUTH ERROR: {context.Exception.Message}");
+                return Task.CompletedTask;
+            }
+        };
+    });
             builder.Services.AddAuthorization();
             builder.Services.AddControllers();
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
