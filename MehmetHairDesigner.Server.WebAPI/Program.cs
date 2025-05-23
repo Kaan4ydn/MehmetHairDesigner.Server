@@ -39,6 +39,8 @@ namespace MehmetHairDesigner.Server.WebAPI
                     var key = builder.Configuration["Jwt:Key"];
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
+
+                        ClockSkew = TimeSpan.Zero,
                         ValidateIssuer = true,
                         ValidIssuer = builder.Configuration["Jwt:Issuer"],
                         ValidateAudience = true,
