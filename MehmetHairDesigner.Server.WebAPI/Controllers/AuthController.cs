@@ -5,6 +5,7 @@ using MehmetHairDesigner.Server.Application.DTOs;
 using MehmetHairDesigner.Server.Application.Services;
 using MehmetHairDesigner.Server.Infrastructure.Entities;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace MehmetHairDesigner.Server.WebAPI.Controllers
 {
@@ -70,6 +71,8 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             return Ok(new { token });
         }
 
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [Authorize]
         [HttpGet("userinfo")]
         public IActionResult GetCurrentUserInfo()
