@@ -90,5 +90,8 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
                 Roles = roles
             });
         }
+
+        [HttpGet("ping")]
+public IActionResult Ping() => Ok("pong");
     }
 }

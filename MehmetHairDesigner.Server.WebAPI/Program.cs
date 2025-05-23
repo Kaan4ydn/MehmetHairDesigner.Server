@@ -57,7 +57,13 @@ namespace MehmetHairDesigner.Server.WebAPI
             {
                 Console.WriteLine($"JWT AUTH ERROR: {context.Exception.Message}");
                 return Task.CompletedTask;
-            }
+            },
+
+            OnTokenValidated = context =>
+    {
+        Console.WriteLine($"✅ Token doğrulandı: {context.SecurityToken}");
+        return Task.CompletedTask;
+    }
         };
     });
             builder.Services.AddAuthorization();
@@ -106,26 +112,26 @@ builder.Services.AddScoped<AppointmentService>();
             var app = builder.Build();
 
             // 🛠 Swagger UI
-            if (app.Environment.IsDevelopment())
-            {
+            
                 app.UseSwagger();
                 app.UseSwaggerUI();
-            }
+            
 
             // JWT middleware'leri
             app.UseAuthentication(); // 🔑 önce authentication
             app.UseAuthorization();  // 🔐 sonra authorization
 
             app.MapControllers();
+            Console.WriteLine("📢 Controllers mapped!");
 
           using (var scope = app.Services.CreateScope())
-{
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityAppUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityAppUser>>();
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-    // await yerine:
-    AppDbContextSeed.SeedAsync(userManager, roleManager).GetAwaiter().GetResult();
-}
+                // await yerine:
+                AppDbContextSeed.SeedAsync(userManager, roleManager).GetAwaiter().GetResult();
+            }
 
 
             app.Run();
