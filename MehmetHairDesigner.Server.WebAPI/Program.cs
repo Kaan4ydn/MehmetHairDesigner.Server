@@ -9,6 +9,8 @@ using MehmetHairDesigner.Server.Application.Services;
 using MehmetHairDesigner.Server.Infrastructure.Entities;
 using MehmetHairDesigner.Server.Application.Validators.Auth;
 using FluentValidation;
+using MehmetHairDesigner.Server.Application.Interfaces;
+using MehmetHairDesigner.Server.Infrastructure.Repositories;
 
 namespace MehmetHairDesigner.Server.WebAPI
 {
@@ -48,6 +50,9 @@ namespace MehmetHairDesigner.Server.WebAPI
                 });
 
             builder.Services.AddControllers();
+            builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+builder.Services.AddScoped<AppointmentService>();
+            
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
 
             builder.Services.AddScoped<ITokenService, TokenService>();
