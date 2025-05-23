@@ -48,7 +48,7 @@ namespace MehmetHairDesigner.Server.WebAPI
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
                     };
                 });
-
+            builder.Services.AddAuthorization();
             builder.Services.AddControllers();
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
 builder.Services.AddScoped<AppointmentService>();
