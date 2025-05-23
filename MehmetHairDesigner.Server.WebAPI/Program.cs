@@ -36,40 +36,40 @@ namespace MehmetHairDesigner.Server.WebAPI
             .AddDefaultTokenProviders();
 
             // 🔐 JWT Authentication
-           builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        var key = builder.Configuration["Jwt:Key"];
-        if (string.IsNullOrWhiteSpace(key))
-            throw new InvalidOperationException("❗ JWT Secret Key (Jwt:Key) 'appsettings.json' dosyasından okunamadı.");
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    var base64Key = builder.Configuration["Jwt:Key"];
+                    if (string.IsNullOrWhiteSpace(base64Key))
+                        throw new InvalidOperationException("❗ JWT Secret Key (Jwt:Key) 'appsettings.json' dosyasından okunamadı.");
 
-        var keyBytes = Encoding.UTF8.GetBytes(key);
+                    var keyBytes = Convert.FromBase64String(base64Key);
 
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidIssuer = builder.Configuration["Jwt:Issuer"],
-            ValidateAudience = true,
-            ValidAudience = builder.Configuration["Jwt:Audience"],
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
-            IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-            ClockSkew = TimeSpan.Zero,
-            RequireExpirationTime = true
-        };
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidateAudience = true,
+                        ValidAudience = builder.Configuration["Jwt:Audience"],
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+                        ClockSkew = TimeSpan.Zero,
+                        RequireExpirationTime = true
+                    };
 
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                Console.WriteLine($"❌ JWT AUTH ERROR: {context.Exception.Message}");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine($"✅ Token doğrulandı: {context.SecurityToken}");
-                return Task.CompletedTask;
-            }
+                    options.Events = new JwtBearerEvents
+                    {
+                        OnAuthenticationFailed = context =>
+                        {
+                            Console.WriteLine($"❌ JWT AUTH ERROR: {context.Exception.Message}");
+                            return Task.CompletedTask;
+                        },
+                        OnTokenValidated = context =>
+                        {
+                            Console.WriteLine($"✅ Token doğrulandı: {context.SecurityToken}");
+                            return Task.CompletedTask;
+                        }
                     };
                 });
 
@@ -146,20 +146,18 @@ namespace MehmetHairDesigner.Server.WebAPI
 
             // Seed admin user/roles
             using (var scope = app.Services.CreateScope())
-{
-    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityAppUser>>();
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+            {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityAppUser>>();
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-    // Rol daha önce oluşturulmamışsa oluştur
-    if (!roleManager.RoleExistsAsync("Customer").GetAwaiter().GetResult())
-    {
-        roleManager.CreateAsync(new IdentityRole<Guid>("Customer")).GetAwaiter().GetResult();
-        Console.WriteLine("✅ 'Customer' rolü başarıyla oluşturuldu.");
-    }
+                if (!roleManager.RoleExistsAsync("Customer").GetAwaiter().GetResult())
+                {
+                    roleManager.CreateAsync(new IdentityRole<Guid>("Customer")).GetAwaiter().GetResult();
+                    Console.WriteLine("✅ 'Customer' rolü başarıyla oluşturuldu.");
+                }
 
-    // Admin user/role seed işlemleri varsa buraya
-    AppDbContextSeed.SeedAsync(userManager, roleManager).GetAwaiter().GetResult();
-}
+                AppDbContextSeed.SeedAsync(userManager, roleManager).GetAwaiter().GetResult();
+            }
 
             app.Run();
         }
