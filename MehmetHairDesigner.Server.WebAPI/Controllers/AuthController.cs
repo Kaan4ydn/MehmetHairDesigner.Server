@@ -73,7 +73,6 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
 
 
         [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-        [Authorize]
         [HttpGet("userinfo")]
         public IActionResult GetCurrentUserInfo()
         {
