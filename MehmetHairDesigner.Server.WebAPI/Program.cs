@@ -146,12 +146,20 @@ namespace MehmetHairDesigner.Server.WebAPI
 
             // Seed admin user/roles
             using (var scope = app.Services.CreateScope())
-            {
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityAppUser>>();
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
+{
+    var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityAppUser>>();
+    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
 
-                AppDbContextSeed.SeedAsync(userManager, roleManager).GetAwaiter().GetResult();
-            }
+    // Rol daha önce oluşturulmamışsa oluştur
+    if (!roleManager.RoleExistsAsync("Customer").GetAwaiter().GetResult())
+    {
+        roleManager.CreateAsync(new IdentityRole<Guid>("Customer")).GetAwaiter().GetResult();
+        Console.WriteLine("✅ 'Customer' rolü başarıyla oluşturuldu.");
+    }
+
+    // Admin user/role seed işlemleri varsa buraya
+    AppDbContextSeed.SeedAsync(userManager, roleManager).GetAwaiter().GetResult();
+}
 
             app.Run();
         }
