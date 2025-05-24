@@ -50,6 +50,11 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
                 return BadRequest("Aynı gün içerisinde zaten bir randevunuz var.");
             }
 
+            if (dto.StartTime <= DateTime.Now)
+            {
+                return BadRequest("Geçmiş bir tarihe randevu alınamaz.");
+            }
+
             await _appointmentService.CreateForRegisteredUserAsync(userId, dto);
             return Ok("Giriş yapmış kullanıcı için randevu başarıyla oluşturuldu.");
         }
@@ -66,6 +71,11 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             bool isAvailable = await _appointmentService.IsSlotAvailableAsync(dto.BarberId, dto.StartTime, dto.ServiceType);
             if (!isAvailable)
                 return BadRequest("Seçilen saatte berber meşgul.");
+
+            if (dto.StartTime <= DateTime.Now)
+            {
+                return BadRequest("Geçmiş bir tarihe randevu alınamaz.");
+            }
 
 
 

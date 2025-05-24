@@ -105,6 +105,8 @@ namespace MehmetHairDesigner.Server.WebAPI
             builder.Services.AddRouting(options => options.LowercaseUrls = false);
             builder.Services.AddScoped<INotificationRequestRepository, NotificationRequestRepository>();
             builder.Services.AddScoped<IMailService, MailService>();
+            builder.Services.AddScoped<IBusySlotRepository, BusySlotRepository>();
+            builder.Services.AddScoped<IBusySlotService, BusySlotService>();
 
             // 🧪 Swagger
             builder.Services.AddSwaggerGen(c =>
