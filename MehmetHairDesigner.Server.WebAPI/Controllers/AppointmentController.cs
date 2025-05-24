@@ -1,8 +1,12 @@
-using Microsoft.AspNetCore.Mvc;
 using MehmetHairDesigner.Server.Application.DTOs;
 using MehmetHairDesigner.Server.Application.Services;
 using MehmetHairDesigner.Server.Domain.Entities;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
+using MehmetHairDesigner.Server.Application.Interfaces;
+using MehmetHairDesigner.Server.Infrastructure.Repositories;
 
 namespace MehmetHairDesigner.Server.WebAPI.Controllers
 {
@@ -11,46 +15,136 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
     public class AppointmentController : ControllerBase
     {
         private readonly AppointmentService _appointmentService;
+        private readonly INotificationRequestRepository _notificationRequestRepo;
+       
 
-        public AppointmentController(AppointmentService appointmentService)
+        public AppointmentController(
+    AppointmentService appointmentService,
+    INotificationRequestRepository notificationRequestRepo)
         {
             _appointmentService = appointmentService;
+            _notificationRequestRepo = notificationRequestRepo;
+
+            Console.WriteLine("✅ AppointmentController yüklendi.");
         }
 
-        // ✅ Randevu alma
-        [HttpPost]
-        public async Task<IActionResult> CreateAppointment([FromBody] CreateAppointmentDto dto)
+        /// <summary>
+        /// Giriş yapmış kullanıcılar için randevu oluşturur.
+        /// </summary>
+        [Authorize]
+        [HttpPost("registered")]
+        public async Task<IActionResult> CreateAppointmentForRegistered([FromBody] CreateAppointmentDto dto)
         {
-            var availability = await _appointmentService.GetAvailabilityAsync(dto.BarberId, dto.StartTime.Date);
-
-            var isBusy = availability.Any(slot =>
-                slot.Time == dto.StartTime && slot.IsAvailable == false);
-
-            if (isBusy)
-                return BadRequest("Seçilen saatte randevu alınamaz. Berber meşgul.");
+            Console.WriteLine("🔐 Registered user endpoint çağrıldı");
 
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Guid.TryParse(userIdStr, out var userId);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized("Kullanıcı kimliği geçersiz.");
 
-            var appointment = new Appointment
+            bool isAvailable = await _appointmentService.IsSlotAvailableAsync(dto.BarberId, dto.StartTime, dto.ServiceType);
+            if (!isAvailable)
+                return BadRequest("Seçilen saatte berber meşgul.");
+
+            if (await _appointmentService.UserHasAppointment(userId, dto.StartTime.Date))
             {
-                BarberId = dto.BarberId,
-                StartTime = dto.StartTime,
-                ServiceType = dto.ServiceType,
-                UserId = userId,
-                Notes = dto.GuestFullName + " - " + dto.GuestPhoneNumber
-            };
+                return BadRequest("Aynı gün içerisinde zaten bir randevunuz var.");
+            }
 
-            await _appointmentService.CreateAppointmentAsync(appointment);
-            return Ok("Randevu başarıyla oluşturuldu.");
+            await _appointmentService.CreateForRegisteredUserAsync(userId, dto);
+            return Ok("Giriş yapmış kullanıcı için randevu başarıyla oluşturuldu.");
         }
 
-        // ✅ Müsaitlik
-        [HttpGet("availability")]
-        public async Task<IActionResult> GetAvailability([FromQuery] Guid barberId, [FromQuery] DateTime date)
+        /// <summary>
+        /// Giriş yapmamış kullanıcılar (guest) için randevu oluşturur.
+        /// </summary>
+        [AllowAnonymous]
+        [HttpPost("guest")]
+        public async Task<IActionResult> CreateAppointmentForGuest([FromBody] CreateAppointmentGuestDto dto)
         {
-            var result = await _appointmentService.GetAvailabilityAsync(barberId, date);
+            Console.WriteLine("👤 Guest user endpoint çağrıldı");
+
+            bool isAvailable = await _appointmentService.IsSlotAvailableAsync(dto.BarberId, dto.StartTime, dto.ServiceType);
+            if (!isAvailable)
+                return BadRequest("Seçilen saatte berber meşgul.");
+
+
+
+            await _appointmentService.CreateForGuestAsync(dto);
+            return Ok("Misafir kullanıcı için randevu başarıyla oluşturuldu.");
+        }
+
+        /// <summary>
+        /// Belirtilen tarih ve berber için müsait saatleri döner.
+        /// </summary>
+        [HttpGet("availability")]
+        public async Task<IActionResult> GetAvailability(
+    [FromQuery] Guid barberId,
+    [FromQuery] DateTime date,
+    [FromQuery] ServiceType serviceType)
+        {
+            var result = await _appointmentService.GetAvailabilityAsync(barberId, date, serviceType);
             return Ok(result);
         }
+
+        [HttpGet("available-slots")]
+        public async Task<IActionResult> GetAvailableSlots(
+     [FromQuery] Guid barberId,
+     [FromQuery] ServiceType serviceType,
+     [FromQuery] int days) // 1 = sadece bugün, 2 = bugün + yarın vs.
+        {
+            if (days <= 0 || days > 7)
+                return BadRequest("Gün sayısı 1 ile 7 arasında olmalıdır.");
+
+            var result = await _appointmentService.GetAvailabilityForRangeAsync(barberId, serviceType, days);
+            return Ok(result);
+        }
+
+        [HttpPost("notify-when-available")]
+        public async Task<IActionResult> NotifyWhenAvailable([FromBody] NotifyRequestDto dto)
+        {
+            var entity = new NotificationRequest
+            {
+                UserId = User.Identity?.IsAuthenticated == true
+                    ? Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))
+                    : null,
+                PhoneNumber = dto.PhoneNumber,
+                RequestedDate = dto.Date.Date,
+                ServiceType = dto.ServiceType
+            };
+
+            await _notificationRequestRepo.AddAsync(entity);
+            await _notificationRequestRepo.SaveChangesAsync();
+
+            return Ok("Uygun saat açıldığında size haber verilecek.");
+        }
+
+        [Authorize]
+        [HttpDelete("{appointmentId}")]
+        public async Task<IActionResult> CancelAppointment(Guid appointmentId)
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized("Kullanıcı kimliği geçersiz.");
+
+            bool result = await _appointmentService.CancelAppointmentAsync(appointmentId, userId);
+            if (!result)
+                return NotFound("İlgili randevu bulunamadı veya size ait değil.");
+
+            return Ok("Randevunuz iptal edildi.");
+        }
+
+        [AllowAnonymous]
+        [HttpDelete("cancel-guest")]
+        public async Task<IActionResult> CancelGuestAppointment([FromBody] CancelGuestAppointmentDto dto)
+        {
+            bool result = await _appointmentService.CancelGuestAppointmentAsync(
+                dto.FullName, dto.PhoneNumber);
+
+            if (!result)
+                return NotFound("Eşleşen randevu bulunamadı.");
+
+            return Ok("Randevunuz iptal edildi.");
+        }
+
     }
 }

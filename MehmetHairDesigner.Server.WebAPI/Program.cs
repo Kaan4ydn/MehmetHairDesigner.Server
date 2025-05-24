@@ -1,16 +1,17 @@
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
-using System.Text;
-using MehmetHairDesigner.Server.Infrastructure.Persistence;
-using MehmetHairDesigner.Server.Application.Services;
-using MehmetHairDesigner.Server.Infrastructure.Entities;
-using MehmetHairDesigner.Server.Application.Validators.Auth;
 using FluentValidation;
 using MehmetHairDesigner.Server.Application.Interfaces;
+using MehmetHairDesigner.Server.Application.Services;
+using MehmetHairDesigner.Server.Application.Validators.Auth;
+using MehmetHairDesigner.Server.Infrastructure.Entities;
+using MehmetHairDesigner.Server.Infrastructure.Persistence;
 using MehmetHairDesigner.Server.Infrastructure.Repositories;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
+using System.Security.Claims;
+using System.Text;
 
 namespace MehmetHairDesigner.Server.WebAPI
 {
@@ -36,42 +37,50 @@ namespace MehmetHairDesigner.Server.WebAPI
             .AddDefaultTokenProviders();
 
             // 🔐 JWT Authentication
-            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                .AddJwtBearer(options =>
-                {
-                    var base64Key = builder.Configuration["Jwt:Key"];
-                    if (string.IsNullOrWhiteSpace(base64Key))
-                        throw new InvalidOperationException("❗ JWT Secret Key (Jwt:Key) 'appsettings.json' dosyasından okunamadı.");
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+.AddJwtBearer(options =>
+{
+    var base64Key = builder.Configuration["Jwt:Key"];
+    var keyBytes = Convert.FromBase64String(base64Key);
 
-                    var keyBytes = Convert.FromBase64String(base64Key);
+    options.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["Jwt:Audience"],
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
+        ClockSkew = TimeSpan.Zero,
+        RequireExpirationTime = true,
+        NameClaimType = ClaimTypes.NameIdentifier,
+        RoleClaimType = ClaimTypes.Role
+    };
 
-                    options.TokenValidationParameters = new TokenValidationParameters
-                    {
-                        ValidateIssuer = true,
-                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                        ValidateAudience = true,
-                        ValidAudience = builder.Configuration["Jwt:Audience"],
-                        ValidateLifetime = true,
-                        ValidateIssuerSigningKey = true,
-                        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-                        ClockSkew = TimeSpan.Zero,
-                        RequireExpirationTime = true
-                    };
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
+            if (!string.IsNullOrEmpty(token))
+                context.Token = token;
 
-                    options.Events = new JwtBearerEvents
-                    {
-                        OnAuthenticationFailed = context =>
-                        {
-                            Console.WriteLine($"❌ JWT AUTH ERROR: {context.Exception.Message}");
-                            return Task.CompletedTask;
-                        },
-                        OnTokenValidated = context =>
-                        {
-                            Console.WriteLine($"✅ Token doğrulandı: {context.SecurityToken}");
-                            return Task.CompletedTask;
-                        }
-                    };
-                });
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            context.HandleResponse();
+            context.Response.StatusCode = 401;
+            context.Response.ContentType = "application/json";
+            return context.Response.WriteAsync("{\"error\":\"Yetkisiz erişim - geçerli token gönderilmedi.\"}");
+        }
+    };
+});
 
             builder.Services.AddAuthorization();
 
@@ -93,6 +102,9 @@ namespace MehmetHairDesigner.Server.WebAPI
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
             builder.Services.AddControllers();
+            builder.Services.AddRouting(options => options.LowercaseUrls = false);
+            builder.Services.AddScoped<INotificationRequestRepository, NotificationRequestRepository>();
+            builder.Services.AddScoped<IMailService, MailService>();
 
             // 🧪 Swagger
             builder.Services.AddSwaggerGen(c =>
@@ -130,8 +142,7 @@ namespace MehmetHairDesigner.Server.WebAPI
             var app = builder.Build();
 
             // 🧪 Swagger UI
-            app.UseSwagger();
-            app.UseSwaggerUI();
+           
 
             // 🔄 CORS aktif hale getiriliyor
             app.UseCors("AllowAll");
@@ -139,6 +150,8 @@ namespace MehmetHairDesigner.Server.WebAPI
             // 🔐 JWT Auth Middleware
             app.UseAuthentication();
             app.UseAuthorization();
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             // 🎯 Routing
             app.MapControllers();

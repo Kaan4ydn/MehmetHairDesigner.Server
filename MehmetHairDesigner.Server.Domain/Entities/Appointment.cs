@@ -21,6 +21,8 @@ namespace MehmetHairDesigner.Server.Domain.Entities
 
         // Navigation
         public Barber Barber { get; set; }
+
+        public AppUser User { get; set; }
     }
 
 

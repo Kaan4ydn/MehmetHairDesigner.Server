@@ -14,6 +14,12 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
             _context = context;
         }
 
+        public async Task<bool> HasAppointmentForDayAsync(Guid userId, DateTime day)
+        {
+            return await _context.Appointments
+                .AnyAsync(a => a.UserId == userId && a.StartTime.Date == day.Date);
+        }
+
         public async Task<List<Appointment>> GetAppointmentsByBarberAndDate(Guid barberId, DateTime date)
         {
             return await _context.Appointments
@@ -26,9 +32,39 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
             await _context.Appointments.AddAsync(appointment);
         }
 
+        public async Task AddUserAsync(AppUser user)
+        {
+            await _context.AppUsers.AddAsync(user);
+        }
+
+        public async Task<Appointment?> GetByIdAsync(Guid id)
+        {
+            return await _context.Appointments.FindAsync(id);
+        }
+
+        public void Delete(Appointment appointment)
+        {
+            _context.Appointments.Remove(appointment);
+        }
+
+        public async Task<Appointment?> GetGuestAppointmentAsync(string fullName, string phoneNumber)
+        {
+            return await _context.Appointments
+                .Include(a => a.User) // navigation property varsa
+                .FirstOrDefaultAsync(a =>
+                    a.User.FullName == fullName &&
+                    a.User.PhoneNumber == phoneNumber );
+        }
+
+
+
+
+
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();
         }
+
+
     }
 }

@@ -17,6 +17,9 @@ namespace MehmetHairDesigner.Server.Infrastructure.Persistence
 
         // Berberler
         public DbSet<Barber> Barbers { get; set; }
+        public DbSet<AppUser> AppUsers { get; set; }
+
+        public DbSet<NotificationRequest> NotificationRequests { get; set; }
 
     }
 }

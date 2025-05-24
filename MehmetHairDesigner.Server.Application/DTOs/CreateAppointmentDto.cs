@@ -7,8 +7,7 @@ namespace MehmetHairDesigner.Server.Application.DTOs
         public DateTime StartTime { get; set; }
         public ServiceType ServiceType { get; set; }
 
-        // Üye değilse dolduracak
-        public string? GuestFullName { get; set; }
-        public string? GuestPhoneNumber { get; set; }
+        // İsteğe bağlı not
+        public string? Notes { get; set; }
     }
 }

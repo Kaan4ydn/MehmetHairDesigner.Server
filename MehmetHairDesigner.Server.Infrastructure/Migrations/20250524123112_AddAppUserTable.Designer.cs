@@ -4,6 +4,7 @@ using MehmetHairDesigner.Server.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MehmetHairDesigner.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250524123112_AddAppUserTable")]
+    partial class AddAppUserTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -137,38 +140,6 @@ namespace MehmetHairDesigner.Server.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Barbers");
-                });
-
-            modelBuilder.Entity("MehmetHairDesigner.Server.Domain.Entities.NotificationRequest", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("RequestedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<TimeSpan?>("RequestedEnd")
-                        .HasColumnType("time");
-
-                    b.Property<TimeSpan?>("RequestedStart")
-                        .HasColumnType("time");
-
-                    b.Property<int>("ServiceType")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("NotificationRequests");
                 });
 
             modelBuilder.Entity("MehmetHairDesigner.Server.Infrastructure.Entities.IdentityAppUser", b =>
