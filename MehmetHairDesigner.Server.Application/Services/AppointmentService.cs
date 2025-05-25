@@ -13,12 +13,18 @@ public class AppointmentService : IAppointmentService
     private readonly IAppointmentRepository _repo;
     private readonly INotificationRequestRepository _notificationRequestRepo;
     private readonly IMailService _mailService;
+    private readonly IHolidayRepository _holidayRepo;
+    private readonly IWorkingHourRepository _workingHourRepo;
+    private readonly IBusySlotRepository _busySlotRepo;
 
-    public AppointmentService(IAppointmentRepository repo , INotificationRequestRepository notificationRequestRepo, IMailService mailService)
+    public AppointmentService(IAppointmentRepository repo , INotificationRequestRepository notificationRequestRepo, IMailService mailService, IHolidayRepository holidayRepo, IWorkingHourRepository workingHourRepo, IBusySlotRepository busySlotRepo)
     {
         _repo = repo;
         _notificationRequestRepo = notificationRequestRepo;
         _mailService = mailService;
+        _holidayRepo = holidayRepo;
+        _workingHourRepo = workingHourRepo;
+        _busySlotRepo = busySlotRepo;
     }
 
     public async Task<bool> UserHasAppointment(Guid userId, DateTime date)
@@ -112,8 +118,6 @@ public class AppointmentService : IAppointmentService
 
     public async Task<bool> IsSlotAvailableAsync(Guid barberId, DateTime requestedStart, ServiceType serviceType)
     {
-        var appointments = await _repo.GetAppointmentsByBarberAndDate(barberId, requestedStart.Date);
-
         var requestedEnd = serviceType switch
         {
             ServiceType.Sac => requestedStart.AddMinutes(30),
@@ -122,9 +126,27 @@ public class AppointmentService : IAppointmentService
             _ => requestedStart
         };
 
-        // Çakýþma var mý kontrolü
-        return !appointments.Any(existing =>
-            requestedStart < existing.EndTime && existing.StartTime < requestedEnd);
+        // 1. Holiday kontrolü
+        var isHoliday = await _holidayRepo.IsHolidayAsync(barberId, requestedStart.Date);
+        if (isHoliday)
+            return false;
+
+        // 2. Working hours kontrolü
+        var workingHours = await _workingHourRepo.GetByBarberAndDayAsync(barberId, requestedStart.DayOfWeek);
+        if (workingHours == null || requestedStart.TimeOfDay < workingHours.Start || requestedEnd.TimeOfDay > workingHours.End)
+            return false;
+
+        // 3. Busy slot kontrolü
+        var busySlots = await _busySlotRepo.GetByDateAsync(barberId, requestedStart.Date);
+        if (busySlots.Any(b => requestedStart < b.EndTime && b.StartTime < requestedEnd))
+            return false;
+
+        // 4. Appointment çakýþma kontrolü
+        var appointments = await _repo.GetAppointmentsByBarberAndDate(barberId, requestedStart.Date);
+        if (appointments.Any(existing => requestedStart < existing.EndTime && existing.StartTime < requestedEnd))
+            return false;
+
+        return true;
     }
     public async Task<Dictionary<string, List<AvailabilitySlotDto>>> GetAvailabilityForRangeAsync(Guid barberId, ServiceType serviceType, int days)
     {

@@ -25,5 +25,8 @@ namespace MehmetHairDesigner.Server.Infrastructure.Persistence
 
         public DbSet<NotificationRequest> NotificationRequests { get; set; }
 
+        public DbSet<Holiday> Holidays { get; set; }
+
+
     }
 }

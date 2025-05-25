@@ -14,6 +14,7 @@ namespace MehmetHairDesigner.Server.Infrastructure.Entities
         Id = Guid.Parse(Id.ToString()),
         FullName = FullName,
         Email = Email,
+        PhoneNumber = PhoneNumber,
         Roles = roles ?? new List<string>()
     };
 }

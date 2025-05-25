@@ -1,12 +1,14 @@
 using MehmetHairDesigner.Server.Application.DTOs;
+using MehmetHairDesigner.Server.Application.Interfaces;
 using MehmetHairDesigner.Server.Application.Services;
 using MehmetHairDesigner.Server.Domain.Entities;
+using MehmetHairDesigner.Server.Infrastructure.Repositories;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Text.Json;
-using MehmetHairDesigner.Server.Application.Interfaces;
-using MehmetHairDesigner.Server.Infrastructure.Repositories;
+using MehmetHairDesigner.Server.Infrastructure.Persistence;
 
 namespace MehmetHairDesigner.Server.WebAPI.Controllers
 {
@@ -16,16 +18,19 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
     {
         private readonly AppointmentService _appointmentService;
         private readonly INotificationRequestRepository _notificationRequestRepo;
-       
+        private readonly AppDbContext _context;
+
 
         public AppointmentController(
     AppointmentService appointmentService,
-    INotificationRequestRepository notificationRequestRepo)
+    INotificationRequestRepository notificationRequestRepo,
+    AppDbContext context    )
         {
             _appointmentService = appointmentService;
             _notificationRequestRepo = notificationRequestRepo;
 
             Console.WriteLine("✅ AppointmentController yüklendi.");
+            _context = context;
         }
 
         /// <summary>
@@ -40,6 +45,26 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (!Guid.TryParse(userIdStr, out var userId))
                 return Unauthorized("Kullanıcı kimliği geçersiz.");
+
+            var exists = await _context.AppUsers.AnyAsync(x => x.Id == userId);
+            if (!exists)
+            {
+                var fullName = User.FindFirstValue(ClaimTypes.Name) ?? "Unknown";
+                var email = User.FindFirstValue(ClaimTypes.Email);
+                var phone = User.FindFirstValue("phone_number"); // varsa, Identity tarafında claim olarak ayarlanmalı
+
+                var appUser = new AppUser
+                {
+                    Id = userId,
+                    FullName = fullName,
+                    Email = email,
+                    PhoneNumber = phone,
+                    Roles = new List<string> { "User" }
+                };
+
+                await _context.AppUsers.AddAsync(appUser);
+                await _context.SaveChangesAsync();
+            }
 
             bool isAvailable = await _appointmentService.IsSlotAvailableAsync(dto.BarberId, dto.StartTime, dto.ServiceType);
             if (!isAvailable)

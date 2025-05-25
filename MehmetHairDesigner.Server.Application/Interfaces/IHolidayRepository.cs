@@ -7,12 +7,13 @@ using System.Threading.Tasks;
 
 namespace MehmetHairDesigner.Server.Application.Interfaces
 {
-    public interface IWorkingHourRepository
+    public interface IHolidayRepository
     {
-        Task<List<WorkingHour>> GetByBarberAsync(Guid barberId);
-        Task ReplaceAllAsync(Guid barberId, List<WorkingHour> hours);
+        Task AddAsync(Holiday holiday);
+        Task DeleteAsync(Guid id);
+        Task<List<Holiday>> GetByBarberAsync(Guid barberId);
 
-        Task<WorkingHour?> GetByBarberAndDayAsync(Guid barberId, DayOfWeek day);
+        Task<bool> IsHolidayAsync(Guid barberId, DateTime date);
         Task SaveChangesAsync();
     }
 }

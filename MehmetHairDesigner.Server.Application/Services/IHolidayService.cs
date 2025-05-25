@@ -8,11 +8,10 @@ using System.Threading.Tasks;
 
 namespace MehmetHairDesigner.Server.Application.Services
 {
-    public interface IWorkingHourService
+    public interface IHolidayService
     {
-        Task SetWorkingHoursAsync(SetWorkingHoursDto dto);
-        Task<List<WorkingHour>> GetWorkingHoursAsync(Guid barberId);
-
-        
+        Task AddHolidayAsync(AddHolidayDto dto);
+        Task DeleteHolidayAsync(Guid id);
+        Task<List<Holiday>> GetHolidaysAsync(Guid barberId);
     }
 }

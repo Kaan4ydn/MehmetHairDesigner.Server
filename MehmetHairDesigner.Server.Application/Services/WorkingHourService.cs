@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using MehmetHairDesigner.Server.Application.Services;
+using MehmetHairDesigner.Server.Application.Interfaces;
 
 
 namespace MehmetHairDesigner.Server.Application.Services

@@ -43,8 +43,9 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
                 FullName = dto.FullName,
                 UserName = dto.Email,
                 Email = dto.Email,
-                
-                
+                PhoneNumber = dto.PhoneNumber,
+
+
             };
 
             var result = await _userManager.CreateAsync(user, dto.Password);

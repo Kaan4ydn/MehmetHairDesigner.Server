@@ -13,12 +13,14 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
     {
         private readonly IBusySlotService _busySlotService;
         private readonly IWorkingHourService _workingHourService;
+        private readonly IHolidayService _holidayService;
 
 
-        public AdminController(IBusySlotService busySlotService, IWorkingHourService workingHourService)
+        public AdminController(IBusySlotService busySlotService, IWorkingHourService workingHourService, IHolidayService holidayService)
         {
             _busySlotService = busySlotService;
             _workingHourService = workingHourService;
+            _holidayService = holidayService;
         }
 
         #region BusySlots
@@ -70,6 +72,31 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         public async Task<IActionResult> GetWorkingHours([FromQuery] Guid barberId)
         {
             var result = await _workingHourService.GetWorkingHoursAsync(barberId);
+            return Ok(result);
+        }
+
+        #endregion
+
+        #region Holiday
+
+        [HttpPost("holiday")]
+        public async Task<IActionResult> AddHoliday([FromBody] AddHolidayDto dto)
+        {
+            await _holidayService.AddHolidayAsync(dto);
+            return Ok("Tatil günü eklendi.");
+        }
+
+        [HttpDelete("holiday/{id}")]
+        public async Task<IActionResult> DeleteHoliday(Guid id)
+        {
+            await _holidayService.DeleteHolidayAsync(id);
+            return Ok("Tatil günü silindi.");
+        }
+
+        [HttpGet("holiday")]
+        public async Task<IActionResult> GetHolidays([FromQuery] Guid barberId)
+        {
+            var result = await _holidayService.GetHolidaysAsync(barberId);
             return Ok(result);
         }
 

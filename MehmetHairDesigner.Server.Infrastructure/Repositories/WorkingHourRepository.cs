@@ -27,12 +27,19 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
         }
 
         public async Task ReplaceAllAsync(Guid barberId, List<WorkingHour> hours)
+
+
         {
             var existing = await _context.WorkingHours.Where(x => x.BarberId == barberId).ToListAsync();
             _context.WorkingHours.RemoveRange(existing);
             await _context.WorkingHours.AddRangeAsync(hours);
         }
 
+        public async Task<WorkingHour?> GetByBarberAndDayAsync(Guid barberId, DayOfWeek day)
+        {
+            return await _context.WorkingHours
+                .FirstOrDefaultAsync(w => w.BarberId == barberId && w.Day == day);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

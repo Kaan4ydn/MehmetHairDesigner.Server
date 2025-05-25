@@ -12,6 +12,7 @@ namespace MehmetHairDesigner.Server.Application.Interfaces
         Task AddAsync(BusySlot slot);
         Task DeleteAsync(Guid id);
         Task<List<BusySlot>> GetByDateAsync(Guid barberId, DateTime date);
+
         Task SaveChangesAsync();
     }
 }
