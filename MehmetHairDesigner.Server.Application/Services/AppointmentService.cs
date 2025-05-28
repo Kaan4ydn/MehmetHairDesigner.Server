@@ -222,4 +222,8 @@ public class AppointmentService : IAppointmentService
         return true;
     }
 
+    public async Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date)
+    {
+        return await _repo.GetAppointmentsByBarberAndDate2(barberId, date);
+    }
 }

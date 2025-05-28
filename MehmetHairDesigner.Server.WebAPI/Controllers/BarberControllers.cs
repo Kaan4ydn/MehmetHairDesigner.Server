@@ -19,6 +19,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
 
         // ✅ Tüm berberleri getir
         [HttpGet]
+        [Route("get-barber")]
         public async Task<IActionResult> GetAll()
         {
             var barbers = await _context.Barbers.ToListAsync();
@@ -27,7 +28,8 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
 
         // ✅ Yeni berber oluştur (ileride admin koruması eklenecek)
         [HttpPost]
-public async Task<IActionResult> Create([FromBody] BarberCreateDto dto)
+        [Route("post-barber")]
+        public async Task<IActionResult> Create([FromBody] BarberCreateDto dto)
 {
     var barber = new Barber
     {

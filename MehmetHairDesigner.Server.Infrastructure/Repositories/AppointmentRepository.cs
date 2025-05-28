@@ -56,6 +56,13 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
                     a.User.PhoneNumber == phoneNumber );
         }
 
+        public async Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date)
+        {
+            return await _context.Appointments
+                .Where(a => a.BarberId == barberId && a.StartTime.Date == date.Date)
+                .ToListAsync();
+        }
+
 
 
 
