@@ -9,7 +9,7 @@ namespace MehmetHairDesigner.Server.Infrastructure.Persistence
         public AppDbContext CreateDbContext(string[] args)
         {
             var optionsBuilder = new DbContextOptionsBuilder<AppDbContext>();
-            optionsBuilder.UseSqlServer("Server=localhost\\SQLEXPRESS;Database=HairDesignerDb;Trusted_Connection=True;TrustServerCertificate=True;");
+            optionsBuilder.UseSqlServer("Server=DESKTOP-SO3FKM0;Database=HairDesignerDb;Trusted_Connection=True;TrustServerCertificate=True;");
 
             return new AppDbContext(optionsBuilder.Options);
         }
