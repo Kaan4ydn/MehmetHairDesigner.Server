@@ -19,6 +19,8 @@ namespace MehmetHairDesigner.Server.Application.Interfaces
         void Delete(Appointment entity);
 
         Task<Appointment?> GetGuestAppointmentAsync(string fullName, string phoneNumber);
+
+        Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date);
         Task SaveChangesAsync();
 
     }

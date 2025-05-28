@@ -8,4 +8,6 @@ public interface IAppointmentService
     Task CreateForGuestAsync(CreateAppointmentGuestDto dto);
 
     Task<List<AvailabilitySlotDto>> GetAvailabilityAsync(Guid barberId, DateTime date, ServiceType serviceType);
+
+    Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date);
 }

@@ -19,18 +19,23 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         private readonly AppointmentService _appointmentService;
         private readonly INotificationRequestRepository _notificationRequestRepo;
         private readonly AppDbContext _context;
+        private readonly IWorkingHourService _workingHourService;
 
 
         public AppointmentController(
     AppointmentService appointmentService,
     INotificationRequestRepository notificationRequestRepo,
-    AppDbContext context    )
+    AppDbContext context,
+    IWorkingHourService workingHourService)
         {
             _appointmentService = appointmentService;
             _notificationRequestRepo = notificationRequestRepo;
+            _workingHourService = workingHourService;
+
 
             Console.WriteLine("✅ AppointmentController yüklendi.");
             _context = context;
+            _workingHourService = workingHourService;
         }
 
         /// <summary>
@@ -179,6 +184,20 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
                 return NotFound("Eşleşen randevu bulunamadı.");
 
             return Ok("Randevunuz iptal edildi.");
+        }
+
+        [HttpGet("working-hours")]
+        public async Task<IActionResult> GetWorkingHours([FromQuery] Guid barberId)
+        {
+            var result = await _workingHourService.GetWorkingHoursAsync(barberId);
+            return Ok(result);
+        }
+
+        [HttpGet("appointments")]
+        public async Task<IActionResult> GetAppointmentsOfDay(Guid barberId, DateTime date)
+        {
+            var appointments = await _appointmentService.GetAppointmentsByBarberAndDate2(barberId, date.Date);
+            return Ok(appointments);
         }
 
     }
