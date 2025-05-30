@@ -6,6 +6,8 @@ using MehmetHairDesigner.Server.Application.Services;
 using MehmetHairDesigner.Server.Infrastructure.Entities;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Google.Apis.Auth;
+using MehmetHairDesigner.Server.Domain.Entities;
 
 namespace MehmetHairDesigner.Server.WebAPI.Controllers
 {
@@ -53,7 +55,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
 
-                await _userManager.AddToRoleAsync(user, dto.Role);
+            await _userManager.AddToRoleAsync(user, dto.Role);
 
 
             return Ok("Kayıt başarılı.");
@@ -96,7 +98,75 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             });
         }
 
-        [HttpGet("ping")]
-public IActionResult Ping() => Ok("pong");
+        [HttpPost("google-login")]
+        public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginDto dto)
+        {
+            try
+            {
+                var payload = await GoogleJsonWebSignature.ValidateAsync(dto.IdToken);
+                var email = payload.Email;
+
+                var user = await _userManager.FindByEmailAsync(email);
+                bool isNewUser = false;
+
+                if (user == null)
+                {
+                    user = new IdentityAppUser
+                    {
+                        Email = email,
+                        UserName = email,
+                        FullName = payload.Name,
+                        PhoneNumber = "" // Google'dan gelmez, frontend'den sonra alınacak
+                    };
+
+                    var result = await _userManager.CreateAsync(user);
+                    if (!result.Succeeded)
+                        return BadRequest(result.Errors);
+
+                    await _userManager.AddToRoleAsync(user, "Customer");
+                    isNewUser = true;
+                }
+
+                var roles = await _userManager.GetRolesAsync(user);
+                var token = _tokenService.CreateToken(user.ToDomainUser(roles.ToList()));
+
+                return Ok(new
+                {
+                    token,
+                    isNewUser,
+                    phoneNumberRequired = string.IsNullOrWhiteSpace(user.PhoneNumber)
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new
+                {
+                    error = "Google doğrulama başarısız",
+                    detail = ex.Message
+                });
+            }
+        }
+
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [HttpPost("add-phone")]
+        public async Task<IActionResult> AddPhone([FromBody] AddPhoneDto dto)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (userId == null)
+                return Unauthorized("Kullanıcı kimliği bulunamadı.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null)
+                return NotFound("Kullanıcı bulunamadı.");
+
+            user.PhoneNumber = dto.PhoneNumber;
+
+            var result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded)
+                return BadRequest(result.Errors);
+
+            return Ok("Telefon numarası başarıyla güncellendi.");
+        }
+
     }
 }
