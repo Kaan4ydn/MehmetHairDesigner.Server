@@ -29,11 +29,12 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<List<NotificationRequest>> GetPendingRequestsAsync(DateTime date, TimeSpan time, ServiceType serviceType)
+        public async Task<List<NotificationRequest>> GetPendingRequestsAsync(Guid barberId, DateTime date, TimeSpan time, ServiceType serviceType)
         {
             return await _context.NotificationRequests
                 .Where(x =>
-                    x.RequestedDate.Date == date.Date &&
+                 x.BarberId == barberId &&
+                x.RequestedDate.Date == date.Date &&
                     (!x.RequestedStart.HasValue || x.RequestedStart <= time) &&
                     (!x.RequestedEnd.HasValue || x.RequestedEnd > time) &&
                     x.ServiceType == serviceType)

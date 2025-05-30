@@ -17,7 +17,7 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
         public async Task<bool> HasAppointmentForDayAsync(Guid userId, DateTime day)
         {
             return await _context.Appointments
-                .AnyAsync(a => a.UserId == userId && a.StartTime.Date == day.Date);
+                .AnyAsync(a => a.UserId == userId && a.StartTime > DateTime.UtcNow);
         }
 
         public async Task<List<Appointment>> GetAppointmentsByBarberAndDate(Guid barberId, DateTime date)
@@ -39,7 +39,9 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
 
         public async Task<Appointment?> GetByIdAsync(Guid id)
         {
-            return await _context.Appointments.FindAsync(id);
+            return await _context.Appointments
+       .Include(a => a.User)
+       .FirstOrDefaultAsync(a => a.Id == id);
         }
 
         public void Delete(Appointment appointment)
@@ -63,6 +65,31 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
                 .ToListAsync();
         }
 
+
+        public async Task<List<Appointment>> GetAppointmentsForDate(Guid barberId, DateTime date)
+        {
+            return await _context.Appointments
+                .Where(x => x.BarberId == barberId && x.StartTime.Date == date.Date)
+                .ToListAsync();
+        }
+
+        public Task<Appointment> GetLatestFutureAppointmentForUser(Guid userId)
+        {
+            return _context.Appointments
+                .Where(a => a.UserId == userId && a.StartTime > DateTime.UtcNow)
+                .OrderBy(a => a.StartTime)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<List<Appointment>> GetPendingAppointmentsAsync()
+        {
+            return await _context.Appointments
+                .Include(a => a.User)
+                .Include(a => a.Barber)
+                .Where(a => a.Status == "pending")
+                .OrderBy(a => a.StartTime)
+                .ToListAsync();
+        }
 
 
 

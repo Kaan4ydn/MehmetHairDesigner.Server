@@ -15,12 +15,18 @@ namespace MehmetHairDesigner.Server.Application.Interfaces
 
         Task<bool> HasAppointmentForDayAsync(Guid userId, DateTime day);
 
+        Task<List<Appointment>> GetAppointmentsForDate(Guid barberId, DateTime date);
+
         Task<Appointment> GetByIdAsync(Guid id);
         void Delete(Appointment entity);
 
         Task<Appointment?> GetGuestAppointmentAsync(string fullName, string phoneNumber);
 
         Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date);
+
+        Task<Appointment?> GetLatestFutureAppointmentForUser(Guid userId);
+
+        Task<List<Appointment>> GetPendingAppointmentsAsync();
         Task SaveChangesAsync();
 
     }

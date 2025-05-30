@@ -16,8 +16,9 @@ public class AppointmentService : IAppointmentService
     private readonly IHolidayRepository _holidayRepo;
     private readonly IWorkingHourRepository _workingHourRepo;
     private readonly IBusySlotRepository _busySlotRepo;
+    private readonly INotificationService  _notificationService;
 
-    public AppointmentService(IAppointmentRepository repo , INotificationRequestRepository notificationRequestRepo, IMailService mailService, IHolidayRepository holidayRepo, IWorkingHourRepository workingHourRepo, IBusySlotRepository busySlotRepo)
+    public AppointmentService(IAppointmentRepository repo , INotificationRequestRepository notificationRequestRepo, IMailService mailService, IHolidayRepository holidayRepo, IWorkingHourRepository workingHourRepo, IBusySlotRepository busySlotRepo, INotificationService notificationService)
     {
         _repo = repo;
         _notificationRequestRepo = notificationRequestRepo;
@@ -25,6 +26,7 @@ public class AppointmentService : IAppointmentService
         _holidayRepo = holidayRepo;
         _workingHourRepo = workingHourRepo;
         _busySlotRepo = busySlotRepo;
+        _notificationService = notificationService;
     }
 
     public async Task<bool> UserHasAppointment(Guid userId, DateTime date)
@@ -86,7 +88,8 @@ public class AppointmentService : IAppointmentService
             BarberId = dto.BarberId,
             StartTime = dto.StartTime,
             ServiceType = dto.ServiceType,
-            Notes = dto.Notes
+            Notes = dto.Notes ,
+            Status = "Pending"
         };
 
         await CreateAppointmentAsync(appointment);
@@ -176,18 +179,11 @@ public class AppointmentService : IAppointmentService
         _repo.Delete(appointment);
         await _repo.SaveChangesAsync();
 
+        var barberId = appointment.BarberId;
+
         // Bildirim kontrolü
-        var pending = await _notificationRequestRepo.GetPendingRequestsAsync(date, time, serviceType);
-        foreach (var request in pending)
-        {
-            if (!string.IsNullOrEmpty(request.PhoneNumber)) // Mail yerine PhoneNumber’ý eposta gibi varsayýyoruz
-            {
-                await _mailService.SendAsync(
-                    request.PhoneNumber,
-                    "Randevu Boþluðu Oluþtu!",
-                    $"Seçtiðiniz {request.RequestedDate:dd.MM.yyyy} tarihli saat için boþluk oluþtu.");
-            }
-        }
+        await _notificationService.NotifyIfSlotAvailable(barberId, date, time, serviceType);
+
 
         return true;
     }
@@ -207,17 +203,7 @@ public class AppointmentService : IAppointmentService
         await _repo.SaveChangesAsync();
 
         // Bildirim kontrolü
-        var pending = await _notificationRequestRepo.GetPendingRequestsAsync(date, time, serviceType);
-        foreach (var request in pending)
-        {
-            if (!string.IsNullOrEmpty(request.PhoneNumber))
-            {
-                await _mailService.SendAsync(
-                    request.PhoneNumber,
-                    "Randevu Boþluðu Oluþtu!",
-                    $"Seçtiðiniz {request.RequestedDate:dd.MM.yyyy} tarihli saat için boþluk oluþtu.");
-            }
-        }
+       
 
         return true;
     }

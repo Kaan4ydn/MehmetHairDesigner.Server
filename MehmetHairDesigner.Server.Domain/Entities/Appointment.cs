@@ -23,6 +23,8 @@ namespace MehmetHairDesigner.Server.Domain.Entities
         public Barber Barber { get; set; }
 
         public AppUser User { get; set; }
+
+        public string Status { get; set; } = "pending";
     }
 
 

@@ -11,7 +11,7 @@ namespace MehmetHairDesigner.Server.Application.Interfaces
     {
         Task AddAsync(NotificationRequest entity);
         Task SaveChangesAsync();
-        Task<List<NotificationRequest>> GetPendingRequestsAsync(DateTime date, TimeSpan time, ServiceType serviceType);
+        Task<List<NotificationRequest>> GetPendingRequestsAsync(Guid barberId, DateTime date, TimeSpan time, ServiceType serviceType);
 
 
     }

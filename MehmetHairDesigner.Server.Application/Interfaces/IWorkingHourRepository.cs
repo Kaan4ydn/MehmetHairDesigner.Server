@@ -13,6 +13,8 @@ namespace MehmetHairDesigner.Server.Application.Interfaces
         Task ReplaceAllAsync(Guid barberId, List<WorkingHour> hours);
 
         Task<WorkingHour?> GetByBarberAndDayAsync(Guid barberId, DayOfWeek day);
+
+        Task<WorkingHour?> GetWorkingHoursForDay(Guid barberId, DayOfWeek dayOfWeek);
         Task SaveChangesAsync();
     }
 }

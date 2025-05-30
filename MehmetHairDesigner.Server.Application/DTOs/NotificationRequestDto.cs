@@ -9,11 +9,13 @@ namespace MehmetHairDesigner.Server.Application.DTOs
 {
     public class NotifyRequestDto
     {
+
+        public Guid BarberId { get; set; }
         public DateTime Date { get; set; }                       // 🔹 Zorunlu
         public TimeSpan? StartTime { get; set; }                 // 🔸 Opsiyonel
         public TimeSpan? EndTime { get; set; }                   // 🔸 Opsiyonel
 
         public ServiceType ServiceType { get; set; }
-        public string? PhoneNumber { get; set; }
+        
     }
 }

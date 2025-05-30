@@ -9,5 +9,7 @@ public interface IAppointmentService
 
     Task<List<AvailabilitySlotDto>> GetAvailabilityAsync(Guid barberId, DateTime date, ServiceType serviceType);
 
+    Task<Dictionary<string, List<AvailabilitySlotDto>>> GetAvailabilityForRangeAsync(Guid barberId, ServiceType serviceType, int days);
+
     Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date);
 }

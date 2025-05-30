@@ -10,7 +10,9 @@ namespace MehmetHairDesigner.Server.Domain.Entities
     {
         public Guid Id { get; set; }
         public Guid? UserId { get; set; }
-        public string? PhoneNumber { get; set; }
+        public Guid BarberId { get; set; }
+
+        public string Email { get; set; }
 
         public DateTime RequestedDate { get; set; }
         public TimeSpan? RequestedStart { get; set; }

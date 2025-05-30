@@ -40,6 +40,12 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
             return await _context.WorkingHours
                 .FirstOrDefaultAsync(w => w.BarberId == barberId && w.Day == day);
         }
+
+        public async Task<WorkingHour?> GetWorkingHoursForDay(Guid barberId, DayOfWeek dayOfWeek)
+        {
+            return await _context.WorkingHours
+                .FirstOrDefaultAsync(x => x.BarberId == barberId && x.Day == dayOfWeek);
+        }
         public async Task SaveChangesAsync()
         {
             await _context.SaveChangesAsync();

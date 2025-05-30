@@ -20,22 +20,32 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         private readonly INotificationRequestRepository _notificationRequestRepo;
         private readonly AppDbContext _context;
         private readonly IWorkingHourService _workingHourService;
+        private readonly INotificationService _notificationService;
+        private readonly IAppointmentRepository _appointmentRepo;
+        private readonly IBusySlotService _busySlotService;
+        private readonly IHolidayService _holidayService;
+
 
 
         public AppointmentController(
     AppointmentService appointmentService,
     INotificationRequestRepository notificationRequestRepo,
     AppDbContext context,
-    IWorkingHourService workingHourService)
+        IWorkingHourService workingHourService,
+        INotificationService notificationService,
+        IAppointmentRepository appointmentRepo, IBusySlotService busySlotService , IHolidayService holidayService )
         {
             _appointmentService = appointmentService;
             _notificationRequestRepo = notificationRequestRepo;
             _workingHourService = workingHourService;
-
+            _busySlotService = busySlotService;
+            _holidayService = holidayService;
 
             Console.WriteLine("✅ AppointmentController yüklendi.");
             _context = context;
             _workingHourService = workingHourService;
+            _notificationService = notificationService;
+            _appointmentRepo = appointmentRepo;
         }
 
         /// <summary>
@@ -77,7 +87,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
 
             if (await _appointmentService.UserHasAppointment(userId, dto.StartTime.Date))
             {
-                return BadRequest("Aynı gün içerisinde zaten bir randevunuz var.");
+                return BadRequest("Zaten bir randevunuz var.");
             }
 
             if (dto.StartTime <= DateTime.Now)
@@ -140,22 +150,30 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         }
 
         [HttpPost("notify-when-available")]
+        [Authorize]
         public async Task<IActionResult> NotifyWhenAvailable([FromBody] NotifyRequestDto dto)
         {
+            var email = User.FindFirstValue(ClaimTypes.Email);
+            var userId = Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+
+            if (string.IsNullOrEmpty(email))
+                return BadRequest("Kullanıcı e-posta bilgisi bulunamadı.");
+
             var entity = new NotificationRequest
             {
-                UserId = User.Identity?.IsAuthenticated == true
-                    ? Guid.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier))
-                    : null,
-                PhoneNumber = dto.PhoneNumber,
+                UserId = userId,
+                Email = email,
+                BarberId = dto.BarberId,
                 RequestedDate = dto.Date.Date,
+                RequestedStart = dto.StartTime,
+                RequestedEnd = dto.EndTime,
                 ServiceType = dto.ServiceType
             };
 
             await _notificationRequestRepo.AddAsync(entity);
             await _notificationRequestRepo.SaveChangesAsync();
 
-            return Ok("Uygun saat açıldığında size haber verilecek.");
+            return Ok("Uygun saat açıldığında size e-posta gönderilecek.");
         }
 
         [Authorize]
@@ -166,9 +184,15 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             if (!Guid.TryParse(userIdStr, out var userId))
                 return Unauthorized("Kullanıcı kimliği geçersiz.");
 
+
+
             bool result = await _appointmentService.CancelAppointmentAsync(appointmentId, userId);
             if (!result)
                 return NotFound("İlgili randevu bulunamadı veya size ait değil.");
+
+
+
+
 
             return Ok("Randevunuz iptal edildi.");
         }
@@ -199,6 +223,37 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             var appointments = await _appointmentService.GetAppointmentsByBarberAndDate2(barberId, date.Date);
             return Ok(appointments);
         }
+
+        [Authorize]
+        [HttpGet("my-appointment")]
+        public async Task<IActionResult> GetMyAppointment()
+        {
+            var userIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!Guid.TryParse(userIdStr, out var userId))
+                return Unauthorized();
+
+            var appt = await _appointmentRepo.GetLatestFutureAppointmentForUser(userId);
+            if (appt == null)
+                return NotFound();
+
+            return Ok(appt);
+        }
+
+        [HttpGet("busyslots")]
+        public async Task<IActionResult> GetBusySlotsByDate([FromQuery] Guid barberId, [FromQuery] DateTime date)
+        {
+            var slots = await _busySlotService.GetBusySlotsByDate(barberId, date);
+            return Ok(slots);
+        }
+
+
+        [HttpGet("holiday")]
+        public async Task<IActionResult> GetHolidays([FromQuery] Guid barberId)
+        {
+            var result = await _holidayService.GetHolidaysAsync(barberId);
+            return Ok(result);
+        }
+
 
     }
 }
