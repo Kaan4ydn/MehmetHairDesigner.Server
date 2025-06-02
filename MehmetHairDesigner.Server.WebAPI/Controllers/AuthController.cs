@@ -1,13 +1,16 @@
+using Google.Apis.Auth;
+using MehmetHairDesigner.Server.Application.DTOs;
+using MehmetHairDesigner.Server.Application.Services;
+using MehmetHairDesigner.Server.Domain.Entities;
+using MehmetHairDesigner.Server.Infrastructure.Entities;
+using MehmetHairDesigner.Server.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using MehmetHairDesigner.Server.Application.DTOs;
-using MehmetHairDesigner.Server.Application.Services;
-using MehmetHairDesigner.Server.Infrastructure.Entities;
+using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Google.Apis.Auth;
-using MehmetHairDesigner.Server.Domain.Entities;
 
 namespace MehmetHairDesigner.Server.WebAPI.Controllers
 {
@@ -18,14 +21,16 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         private readonly UserManager<IdentityAppUser> _userManager;
         private readonly SignInManager<IdentityAppUser> _signInManager;
         private readonly ITokenService _tokenService;
+        private readonly AppDbContext _context;
 
         public AuthController(UserManager<IdentityAppUser> userManager,
                               SignInManager<IdentityAppUser> signInManager,
-                              ITokenService tokenService)
+                              ITokenService tokenService, AppDbContext context)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _tokenService = tokenService;
+            _context = context;
         }
 
         [HttpPost("register")]
@@ -156,14 +161,33 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
                 return Unauthorized("Kullanıcı kimliği bulunamadı.");
 
             var user = await _userManager.FindByIdAsync(userId);
+
             if (user == null)
                 return NotFound("Kullanıcı bulunamadı.");
 
             user.PhoneNumber = dto.PhoneNumber;
 
+            var appUser = new AppUser
+            {
+                Id = user.Id,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                Roles = new List<string> { "User" }
+            };
+
+            await _context.AppUsers.AddAsync(appUser);
+            await _context.SaveChangesAsync();
+
+
+
+
+
             var result = await _userManager.UpdateAsync(user);
             if (!result.Succeeded)
                 return BadRequest(result.Errors);
+
+
 
             return Ok("Telefon numarası başarıyla güncellendi.");
         }
