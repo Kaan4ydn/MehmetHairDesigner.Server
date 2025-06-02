@@ -97,26 +97,46 @@ public class AppointmentService : IAppointmentService
 
     public async Task CreateForGuestAsync(CreateAppointmentGuestDto dto)
     {
-        var guestUser = new AppUser
-        {
-            FullName = dto.FullName!,
-            PhoneNumber = dto.PhoneNumber!,
-            Roles = new List<string> { "Guest" }
-        };
 
-        await _repo.AddUserAsync(guestUser);
-        await _repo.SaveChangesAsync();
+        var user = await _repo.GetUserByFullNameAndPhoneAsync(dto.FullName, dto.PhoneNumber);
 
-        var appointment = new Appointment
-        {
-            UserId = guestUser.Id,
-            BarberId = dto.BarberId,
-            StartTime = dto.StartTime,
-            ServiceType = dto.ServiceType,
-            Notes = dto.Notes
-        };
 
-        await CreateAppointmentAsync(appointment);
+        if (user == null) {
+            var guestUser = new AppUser
+            {
+                FullName = dto.FullName!,
+                PhoneNumber = dto.PhoneNumber!,
+                Roles = new List<string> { "Guest" }
+            };
+
+            await _repo.AddUserAsync(guestUser);
+            await _repo.SaveChangesAsync();
+
+            var appointmentForNewGuest = new Appointment
+            {
+                UserId = guestUser.Id,
+                BarberId = dto.BarberId,
+                StartTime = dto.StartTime,
+                ServiceType = dto.ServiceType,
+                Notes = dto.Notes
+            };
+
+            await CreateAppointmentAsync(appointmentForNewGuest);
+        }
+        else {
+            var appointment = new Appointment
+            {
+                UserId = user.Id,
+                BarberId = dto.BarberId,
+                StartTime = dto.StartTime,
+                ServiceType = dto.ServiceType,
+                Notes = dto.Notes
+            };
+
+            await CreateAppointmentAsync(appointment);
+        }
+
+            
     }
 
     public async Task<bool> IsSlotAvailableAsync(Guid barberId, DateTime requestedStart, ServiceType serviceType)
@@ -188,25 +208,67 @@ public class AppointmentService : IAppointmentService
         return true;
     }
 
-    public async Task<bool> CancelGuestAppointmentAsync(string fullName, string phoneNumber)
+    public async Task CreateManualAppointmentAsync(ManualAppointmentDto dto)
     {
-        var appointment = await _repo.GetGuestAppointmentAsync(fullName, phoneNumber);
-        if (appointment == null)
-            return false;
+        var user = await _repo.GetUserByFullNameAndPhoneAsync(dto.FullName, dto.PhoneNumber);
 
-        // Bildirimden önce bilgileri al
-        var date = appointment.StartTime.Date;
-        var time = appointment.StartTime.TimeOfDay;
-        var serviceType = appointment.ServiceType;
+        bool isAvailable = await IsSlotAvailableAsync(dto.BarberId, dto.StartTime, (ServiceType)dto.ServiceType);
+        if (!isAvailable)
+            throw new Exception("Seçilen saat dolu.");
 
-        _repo.Delete(appointment);
-        await _repo.SaveChangesAsync();
+        if (dto.StartTime <= DateTime.Now)
+            throw new Exception("Geçmiþ tarihe randevu alýnamaz.");
 
-        // Bildirim kontrolü
-       
+        // Kullanýcý yoksa: yeni guest oluþtur
+        if (user == null)
+        {
+            var guestDto = new CreateAppointmentGuestDto
+            {
+                FullName = dto.FullName,
+                PhoneNumber = dto.PhoneNumber,
+                BarberId = dto.BarberId,
+                StartTime = dto.StartTime,
+                ServiceType = (ServiceType)dto.ServiceType,
+                Notes = dto.Notes
+            };
 
-        return true;
+            await CreateForGuestAsync(guestDto);
+            return;
+        }
+
+        // Kullanýcý varsa ve guest rolündeyse
+        if (user.Roles.Contains("Guest"))
+        {
+            var guestDto = new CreateAppointmentGuestDto
+            {
+                FullName = user.FullName,
+                PhoneNumber = user.PhoneNumber ?? dto.PhoneNumber, // null ise DTO'dan al
+                BarberId = dto.BarberId,
+                StartTime = dto.StartTime,
+                ServiceType = (ServiceType)dto.ServiceType,
+                Notes = dto.Notes
+            };
+
+            await CreateForGuestAsync(guestDto); // ama yeni user oluþturma!
+            return;
+        }
+
+        // Kullanýcý varsa ve User rolündeyse
+        var registeredDto = new CreateAppointmentDto
+        {
+            BarberId = dto.BarberId,
+            StartTime = dto.StartTime,
+            ServiceType = (ServiceType)dto.ServiceType,
+            Notes = dto.Notes
+        };
+
+        await CreateForRegisteredUserAsync(user.Id, registeredDto);
     }
+
+
+
+
+
 
     public async Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date)
     {

@@ -197,18 +197,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             return Ok("Randevunuz iptal edildi.");
         }
 
-        [AllowAnonymous]
-        [HttpDelete("cancel-guest")]
-        public async Task<IActionResult> CancelGuestAppointment([FromBody] CancelGuestAppointmentDto dto)
-        {
-            bool result = await _appointmentService.CancelGuestAppointmentAsync(
-                dto.FullName, dto.PhoneNumber);
-
-            if (!result)
-                return NotFound("Eşleşen randevu bulunamadı.");
-
-            return Ok("Randevunuz iptal edildi.");
-        }
+        
 
         [HttpGet("working-hours")]
         public async Task<IActionResult> GetWorkingHours([FromQuery] Guid barberId)

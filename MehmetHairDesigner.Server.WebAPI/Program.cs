@@ -113,6 +113,11 @@ namespace MehmetHairDesigner.Server.WebAPI
             builder.Services.AddScoped<IWorkingHourRepository, WorkingHourRepository>();
             builder.Services.AddScoped<INotificationService, NotificationService>();
             builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+            builder.Services.AddScoped<IAppUserService, AppUserService>();
+            builder.Services.AddScoped<IAppUserRepository, AppUserRepository>();
+            builder.Services.AddScoped<IAppointmentService, AppointmentService>();
+            builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+
 
             // 🧪 Swagger
             builder.Services.AddSwaggerGen(c =>

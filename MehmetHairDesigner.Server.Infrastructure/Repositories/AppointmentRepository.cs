@@ -49,6 +49,8 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
             _context.Appointments.Remove(appointment);
         }
 
+       
+
         public async Task<Appointment?> GetGuestAppointmentAsync(string fullName, string phoneNumber)
         {
             return await _context.Appointments
@@ -89,6 +91,12 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
                 .Where(a => a.Status == "pending")
                 .OrderBy(a => a.StartTime)
                 .ToListAsync();
+        }
+
+        public async Task<AppUser?> GetUserByFullNameAndPhoneAsync(string fullName, string phoneNumber)
+        {
+            return await _context.AppUsers
+                .FirstOrDefaultAsync(u => u.FullName == fullName && u.PhoneNumber == phoneNumber);
         }
 
 

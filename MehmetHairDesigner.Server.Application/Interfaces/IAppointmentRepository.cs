@@ -1,4 +1,5 @@
-﻿using MehmetHairDesigner.Server.Domain.Entities;
+﻿using MehmetHairDesigner.Server.Application.DTOs;
+using MehmetHairDesigner.Server.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,11 +21,15 @@ namespace MehmetHairDesigner.Server.Application.Interfaces
         Task<Appointment> GetByIdAsync(Guid id);
         void Delete(Appointment entity);
 
-        Task<Appointment?> GetGuestAppointmentAsync(string fullName, string phoneNumber);
+        
 
         Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date);
 
         Task<Appointment?> GetLatestFutureAppointmentForUser(Guid userId);
+
+        Task<AppUser?> GetUserByFullNameAndPhoneAsync(string fullName, string phoneNumber);
+
+
 
         Task<List<Appointment>> GetPendingAppointmentsAsync();
         Task SaveChangesAsync();

@@ -17,15 +17,20 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         private readonly IHolidayService _holidayService;
         private readonly IAppointmentRepository _appointmentRepo;
         private readonly IMailService _mailService;
+        private readonly IAppointmentService _appointmentService;
+        private readonly IAppUserService _appUserService;
 
 
-        public AdminController(IBusySlotService busySlotService, IWorkingHourService workingHourService, IHolidayService holidayService, IAppointmentRepository appointmentRepo, IMailService mailService)
+
+        public AdminController(IBusySlotService busySlotService, IWorkingHourService workingHourService, IHolidayService holidayService, IAppointmentRepository appointmentRepo, IMailService mailService, IAppointmentService appointmentService, IAppUserService appUserService)
         {
             _busySlotService = busySlotService;
             _workingHourService = workingHourService;
             _holidayService = holidayService;
             _appointmentRepo = appointmentRepo;
             _mailService = mailService;
+            _appointmentService = appointmentService;
+            _appUserService = appUserService;
         }
 
         #region BusySlots
@@ -146,6 +151,40 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             }).ToList();
 
             return Ok(result);
+        }
+
+        [HttpPost("guest")]
+        public async Task<IActionResult> CreateAppointmentForGuest([FromBody] CreateAppointmentGuestDto dto)
+        {
+            Console.WriteLine("👤 Guest user endpoint çağrıldı");
+
+            bool isAvailable = await _appointmentService.IsSlotAvailableAsync(dto.BarberId, dto.StartTime, dto.ServiceType);
+            if (!isAvailable)
+                return BadRequest("Seçilen saatte berber meşgul.");
+
+            if (dto.StartTime <= DateTime.Now)
+            {
+                return BadRequest("Geçmiş bir tarihe randevu alınamaz.");
+            }
+
+
+
+            await _appointmentService.CreateForGuestAsync(dto);
+            return Ok("Misafir kullanıcı için randevu başarıyla oluşturuldu.");
+        }
+
+        [HttpGet("search-users")]
+        public async Task<IActionResult> SearchUsers([FromQuery] string keyword)
+        {
+            var users = await _appUserService.SearchUsersAsync(keyword);
+            return Ok(users);
+        }
+
+        [HttpPost("manual")]
+        public async Task<IActionResult> CreateManualAppointment([FromBody] ManualAppointmentDto dto)
+        {
+            await _appointmentService.CreateManualAppointmentAsync(dto);
+            return Ok("Randevu başarıyla oluşturuldu.");
         }
 
 

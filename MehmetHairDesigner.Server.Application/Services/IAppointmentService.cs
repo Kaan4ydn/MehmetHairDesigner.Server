@@ -12,4 +12,10 @@ public interface IAppointmentService
     Task<Dictionary<string, List<AvailabilitySlotDto>>> GetAvailabilityForRangeAsync(Guid barberId, ServiceType serviceType, int days);
 
     Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date);
+
+    Task CreateManualAppointmentAsync(ManualAppointmentDto dto);
+
+    Task<bool> IsSlotAvailableAsync(Guid barberId, DateTime requestedStart, ServiceType serviceType);
+
+
 }
