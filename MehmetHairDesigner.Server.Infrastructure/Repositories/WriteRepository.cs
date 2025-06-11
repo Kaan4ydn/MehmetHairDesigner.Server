@@ -1,5 +1,6 @@
 ﻿using MehmetHairDesigner.Server.Application.Interfaces.Repositories;
 using MehmetHairDesigner.Server.Domain.Abstraction;
+using MehmetHairDesigner.Server.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -12,10 +13,10 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
 {
     public class WriteRepository<TEntity> : IWriteRepository<TEntity> where TEntity : class, IBaseEntity, new()
     {
-        private readonly DbContext _context;
+        private readonly AppDbContext _context;
         private DbSet<TEntity> Entity;
 
-        public WriteRepository(DbContext context)
+        public WriteRepository(AppDbContext context)
         {
             _context = context;
             Entity = _context.Set<TEntity>();

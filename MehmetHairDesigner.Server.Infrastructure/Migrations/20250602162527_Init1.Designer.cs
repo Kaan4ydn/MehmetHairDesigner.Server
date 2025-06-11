@@ -4,6 +4,7 @@ using MehmetHairDesigner.Server.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MehmetHairDesigner.Server.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250602162527_Init1")]
+    partial class Init1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -153,29 +156,14 @@ namespace MehmetHairDesigner.Server.Infrastructure.Migrations
                     b.Property<Guid>("BarberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("CreateAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<DateTimeOffset?>("DeleteAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<string>("Reason")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("StartTime")
                         .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset?>("UpdateAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
@@ -191,26 +179,11 @@ namespace MehmetHairDesigner.Server.Infrastructure.Migrations
                     b.Property<Guid>("BarberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("CreateAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<DateTimeOffset?>("DeleteAt")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<string>("Reason")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTimeOffset?>("UpdateAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 
@@ -226,24 +199,12 @@ namespace MehmetHairDesigner.Server.Infrastructure.Migrations
                     b.Property<Guid>("BarberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("CreateAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
-
-                    b.Property<DateTimeOffset?>("DeleteAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
 
                     b.Property<DateTime>("RequestedDate")
                         .HasColumnType("datetime2");
@@ -256,9 +217,6 @@ namespace MehmetHairDesigner.Server.Infrastructure.Migrations
 
                     b.Property<int>("ServiceType")
                         .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("UpdateAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");
@@ -277,29 +235,14 @@ namespace MehmetHairDesigner.Server.Infrastructure.Migrations
                     b.Property<Guid>("BarberId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<DateTimeOffset>("CreateAt")
-                        .HasColumnType("datetimeoffset");
-
                     b.Property<int>("Day")
                         .HasColumnType("int");
-
-                    b.Property<DateTimeOffset?>("DeleteAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.Property<TimeSpan>("End")
                         .HasColumnType("time");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
                     b.Property<TimeSpan>("Start")
                         .HasColumnType("time");
-
-                    b.Property<DateTimeOffset?>("UpdateAt")
-                        .HasColumnType("datetimeoffset");
 
                     b.HasKey("Id");
 

@@ -10,9 +10,9 @@ namespace MehmetHairDesigner.Server.Application.Services
 {
     public interface IWorkingHourService
     {
-        Task SetWorkingHoursAsync(SetWorkingHoursDto dto);
+        Task SetWorkingHoursAsync(SetWorkingHoursDto setWorkingHoursDto);
         Task<List<WorkingHour>> GetWorkingHoursAsync(Guid barberId);
-
-        
+        Task UpdateWorkingHourAsync(UpdateWorkingHourDto updateWorkingHourDto);
+        Task DeleteAllWorkingHoursAsync(Guid barberId);
     }
 }
