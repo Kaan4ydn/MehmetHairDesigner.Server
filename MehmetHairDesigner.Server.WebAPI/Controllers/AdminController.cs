@@ -4,6 +4,7 @@ using MehmetHairDesigner.Server.Application.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 namespace MehmetHairDesigner.Server.WebAPI.Controllers
 {
     [Authorize(Roles = "Admin", AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
@@ -19,6 +20,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
         private readonly IMailService _mailService;
         private readonly IAppointmentService _appointmentService;
         private readonly IAppUserService _appUserService;
+        
 
 
 
@@ -31,6 +33,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             _mailService = mailService;
             _appointmentService = appointmentService;
             _appUserService = appUserService;
+           
         }
 
         #region BusySlots
@@ -186,6 +189,47 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             await _appointmentService.CreateManualAppointmentAsync(dto);
             return Ok("Randevu başarıyla oluşturuldu.");
         }
+
+        [HttpGet("appointment/{id}")]
+        public async Task<IActionResult> GetAppointmentDetails(Guid id)
+        {
+            var appointment = await _appointmentService.GetAppointmentDetailsAsync(id);
+            if (appointment == null)
+                return NotFound("Randevu bulunamadı");
+
+            var result = new
+            {
+                appointment.Id,
+                appointment.StartTime,
+                appointment.EndTime,
+                appointment.ServiceType,
+                appointment.Status,
+                appointment.Notes,
+                appointment.User.FullName,
+                appointment.User.PhoneNumber,
+                User = new
+                {
+                    appointment.User.Id,
+                    appointment.User.FullName,
+                    appointment.User.Email,
+                    appointment.User.PhoneNumber
+                }
+            };
+
+            return Ok(result);
+        }
+
+        [HttpPut("appointment/{id}/cancel")]
+        public async Task<IActionResult> AdminCancelAppointment(Guid id, [FromBody] CancelAppointmentDto dto)
+        {
+            var success = await _appointmentService.AdminCancelAppointmentAsync(id, dto.Reason);
+
+            if (!success)
+                return NotFound("Randevu bulunamadı");
+
+            return Ok("Randevu başarıyla iptal edildi");
+        }
+
 
 
         #endregion

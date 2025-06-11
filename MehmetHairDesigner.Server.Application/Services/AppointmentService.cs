@@ -95,6 +95,12 @@ public class AppointmentService : IAppointmentService
         await CreateAppointmentAsync(appointment);
     }
 
+    public async Task<Appointment?> GetAppointmentDetailsAsync(Guid id)
+    {
+        return await _repo.GetAppointmentWithUserByIdAsync(id);
+    }
+
+
     public async Task CreateForGuestAsync(CreateAppointmentGuestDto dto)
     {
 
@@ -137,6 +143,19 @@ public class AppointmentService : IAppointmentService
         }
 
             
+    }
+
+    public async Task<bool> AdminCancelAppointmentAsync(Guid appointmentId, string reason)
+    {
+        var appointment = await _repo.GetAppointmentWithUserByIdAsync(appointmentId);
+        if (appointment == null)
+            return false;
+
+        appointment.Status = "cancelled";
+        appointment.Notes = $"[Ýptal Sebebi] {reason}";
+
+        await _repo.UpdateAsync(appointment);
+        return true;
     }
 
     public async Task<bool> IsSlotAvailableAsync(Guid barberId, DateTime requestedStart, ServiceType serviceType)

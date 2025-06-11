@@ -139,7 +139,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
                 {
                     token,
                     isNewUser,
-                    phoneNumberRequired = string.IsNullOrWhiteSpace(user.PhoneNumber)
+                    PhoneNumberRequired = string.IsNullOrWhiteSpace(user.PhoneNumber)
                 });
             }
             catch (Exception ex)

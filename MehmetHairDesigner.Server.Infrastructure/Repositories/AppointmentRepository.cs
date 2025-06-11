@@ -51,19 +51,20 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
 
        
 
-        public async Task<Appointment?> GetGuestAppointmentAsync(string fullName, string phoneNumber)
+        public async Task<Appointment?> GetGuestAppointmentAsync(string fullName, string PhoneNumber)
         {
             return await _context.Appointments
                 .Include(a => a.User) // navigation property varsa
                 .FirstOrDefaultAsync(a =>
                     a.User.FullName == fullName &&
-                    a.User.PhoneNumber == phoneNumber );
+                    a.User.PhoneNumber == PhoneNumber );
         }
 
         public async Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date)
         {
             return await _context.Appointments
-                .Where(a => a.BarberId == barberId && a.StartTime.Date == date.Date)
+                .Where(a => a.BarberId == barberId && a.StartTime.Date == date.Date && a.Status != "cancelled")
+                .Include(x => x.User)
                 .ToListAsync();
         }
 
@@ -93,10 +94,23 @@ namespace MehmetHairDesigner.Server.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<AppUser?> GetUserByFullNameAndPhoneAsync(string fullName, string phoneNumber)
+        public async Task<AppUser?> GetUserByFullNameAndPhoneAsync(string fullName, string PhoneNumber)
         {
             return await _context.AppUsers
-                .FirstOrDefaultAsync(u => u.FullName == fullName && u.PhoneNumber == phoneNumber);
+                .FirstOrDefaultAsync(u => u.FullName == fullName && u.PhoneNumber == PhoneNumber);
+        }
+
+        public async Task<Appointment?> GetAppointmentWithUserByIdAsync(Guid id)
+        {
+            return await _context.Appointments
+                .Include(a => a.User)
+                .FirstOrDefaultAsync(a => a.Id == id);
+        }
+
+        public async Task UpdateAsync(Appointment appointment)
+        {
+            _context.Appointments.Update(appointment);
+            await _context.SaveChangesAsync();
         }
 
 

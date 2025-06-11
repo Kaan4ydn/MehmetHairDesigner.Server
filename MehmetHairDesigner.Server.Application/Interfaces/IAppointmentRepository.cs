@@ -25,9 +25,15 @@ namespace MehmetHairDesigner.Server.Application.Interfaces
 
         Task<List<Appointment>> GetAppointmentsByBarberAndDate2(Guid barberId, DateTime date);
 
+        Task<Appointment?> GetAppointmentWithUserByIdAsync(Guid id);
+
+        
+        Task UpdateAsync(Appointment appointment);
+
+
         Task<Appointment?> GetLatestFutureAppointmentForUser(Guid userId);
 
-        Task<AppUser?> GetUserByFullNameAndPhoneAsync(string fullName, string phoneNumber);
+        Task<AppUser?> GetUserByFullNameAndPhoneAsync(string fullName, string PhoneNumber);
 
 
 
