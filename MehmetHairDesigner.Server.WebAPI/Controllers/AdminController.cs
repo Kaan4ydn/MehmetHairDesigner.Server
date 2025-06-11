@@ -66,18 +66,32 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
 
         #region WorkingHours
 
-        [HttpPost("working-hours")]
+        [HttpPost("add-working-hours")]
         public async Task<IActionResult> SetWorkingHours([FromBody] SetWorkingHoursDto dto)
         {
             await _workingHourService.SetWorkingHoursAsync(dto);
-            return Ok("Çalışma saatleri güncellendi.");
+            return Ok("Çalışma saatleri eklendi.");
         }
 
-        [HttpGet("working-hours")]
+        [HttpGet("get-working-hours")]
         public async Task<IActionResult> GetWorkingHours([FromQuery] Guid barberId)
         {
             var result = await _workingHourService.GetWorkingHoursAsync(barberId);
             return Ok(result);
+        }
+
+        [HttpPut("update-working-hours")]
+        public async Task<IActionResult> UpdateWorkingHours([FromBody] UpdateWorkingHourDto dto)
+        {
+            await _workingHourService.UpdateWorkingHourAsync(dto);
+            return Ok("Çalışma saatleri güncellendi.");
+        }
+
+        [HttpDelete("working-hours/by-barber/{barberId}")]
+        public async Task<IActionResult> DeleteWorkingHoursByBarber([FromRoute] Guid barberId)
+        {
+            await _workingHourService.DeleteAllWorkingHoursAsync(barberId);
+            return Ok("Berberin tüm çalışma saatleri silindi.");
         }
 
         #endregion

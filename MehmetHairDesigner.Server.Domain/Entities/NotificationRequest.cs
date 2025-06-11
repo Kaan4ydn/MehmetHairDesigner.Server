@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MehmetHairDesigner.Server.Domain.Abstraction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace MehmetHairDesigner.Server.Domain.Entities
 {
-    public class NotificationRequest
+    public class NotificationRequest : BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid? UserId { get; set; }
         public Guid BarberId { get; set; }
 

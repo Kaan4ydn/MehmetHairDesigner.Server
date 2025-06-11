@@ -17,7 +17,6 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             _context = context;
         }
 
-        // ✅ Tüm berberleri getir
         [HttpGet]
         [Route("get-barber")]
         public async Task<IActionResult> GetAll()
@@ -26,22 +25,53 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
             return Ok(barbers);
         }
 
-        // ✅ Yeni berber oluştur (ileride admin koruması eklenecek)
         [HttpPost]
         [Route("post-barber")]
         public async Task<IActionResult> Create([FromBody] BarberCreateDto dto)
-{
-    var barber = new Barber
-    {
-        Id = Guid.NewGuid(),
-        FullName = dto.FullName,
-        Appointments = new List<Appointment>() // boş başlat
-    };
+        {
+            var barber = new Barber
+            {
+                Id = Guid.NewGuid(),
+                FullName = dto.FullName,
+                Appointments = new List<Appointment>() // boş başlat
+            };
 
-    _context.Barbers.Add(barber);
-    await _context.SaveChangesAsync();
+            _context.Barbers.Add(barber);
+            await _context.SaveChangesAsync();
 
-    return Ok(barber);
-}
+            return Ok(barber);
+        }
+
+        [HttpPut]
+        [Route("update-barber/{barberId}")]
+        public async Task<IActionResult> Update(Guid barberId, [FromBody] BarberCreateDto dto)
+        {
+            var barber = await _context.Barbers.FindAsync(barberId);
+
+            if (barber == null)
+                return NotFound("Berber bulunamadı.");
+
+            barber.FullName = dto.FullName;
+
+            _context.Barbers.Update(barber);
+            await _context.SaveChangesAsync();
+
+            return Ok(barber);
+        }
+
+        [HttpDelete]
+        [Route("delete-barber/{barberId}")]
+        public async Task<IActionResult> Delete(Guid barberId)
+        {
+            var barber = await _context.Barbers.FirstOrDefaultAsync(b => b.Id == barberId);
+
+            if (barber == null)
+                return NotFound("Berber bulunamadı.");
+
+            _context.Barbers.Remove(barber);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
     }
 }

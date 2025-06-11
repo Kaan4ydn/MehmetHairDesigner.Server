@@ -1,5 +1,6 @@
 using FluentValidation;
 using MehmetHairDesigner.Server.Application.Interfaces;
+using MehmetHairDesigner.Server.Application.Interfaces.Repositories;
 using MehmetHairDesigner.Server.Application.Services;
 using MehmetHairDesigner.Server.Application.Validators.Auth;
 using MehmetHairDesigner.Server.Infrastructure.Entities;
@@ -98,10 +99,8 @@ namespace MehmetHairDesigner.Server.WebAPI
 
             // 🧩 DI / Validators / Services
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-            builder.Services.AddScoped<AppointmentService>();
             builder.Services.AddScoped<ITokenService, TokenService>();
             builder.Services.AddValidatorsFromAssemblyContaining<RegisterDtoValidator>();
-            builder.Services.AddControllers();
             builder.Services.AddRouting(options => options.LowercaseUrls = false);
             builder.Services.AddScoped<INotificationRequestRepository, NotificationRequestRepository>();
             builder.Services.AddScoped<IMailService, MailService>();
@@ -117,6 +116,10 @@ namespace MehmetHairDesigner.Server.WebAPI
             builder.Services.AddScoped<IAppUserRepository, AppUserRepository>();
             builder.Services.AddScoped<IAppointmentService, AppointmentService>();
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            builder.Services.AddScoped(typeof(IReadRepository<>), typeof(ReadRepository<>));
+            builder.Services.AddScoped(typeof(IWriteRepository<>), typeof(WriteRepository<>));
+            builder.Services.AddControllers();
+
 
 
             // 🧪 Swagger

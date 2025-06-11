@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MehmetHairDesigner.Server.Domain.Abstraction;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,9 +7,8 @@ using System.Threading.Tasks;
 
 namespace MehmetHairDesigner.Server.Domain.Entities
 {
-    public class BusySlot
+    public class BusySlot : BaseEntity
     {
-        public Guid Id { get; set; }
         public Guid BarberId { get; set; }
         public DateTime StartTime { get; set; }
         public DateTime EndTime { get; set; }
