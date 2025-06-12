@@ -16,7 +16,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
     [Route("api/[controller]")]
     public class AppointmentController : ControllerBase
     {
-        private readonly AppointmentService _appointmentService;
+        private readonly IAppointmentService _appointmentService;
         private readonly INotificationRequestRepository _notificationRequestRepo;
         private readonly AppDbContext _context;
         private readonly IWorkingHourService _workingHourService;
@@ -28,7 +28,7 @@ namespace MehmetHairDesigner.Server.WebAPI.Controllers
 
 
         public AppointmentController(
-    AppointmentService appointmentService,
+    IAppointmentService appointmentService,
     INotificationRequestRepository notificationRequestRepo,
     AppDbContext context,
         IWorkingHourService workingHourService,

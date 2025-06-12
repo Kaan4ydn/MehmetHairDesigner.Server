@@ -17,6 +17,9 @@ public interface IAppointmentService
 
     Task<Appointment?> GetAppointmentDetailsAsync(Guid id);
 
+    Task<bool> UserHasAppointment(Guid userId, DateTime date);
+    Task<bool> CancelAppointmentAsync(Guid appointmentId, Guid userId);
+
     Task<bool> AdminCancelAppointmentAsync(Guid appointmentId, string reason);
 
     Task<bool> IsSlotAvailableAsync(Guid barberId, DateTime requestedStart, ServiceType serviceType);
